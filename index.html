@@ -5,71 +5,193 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>會員推薦統計分析</title>
 <style>
-  :root { --bd:#e5e7eb; --mut:#6b7280; }
+  :root {
+    --bd:#e8edf3; --mut:#6b7280; --ink:#0f172a;
+    --brand:#2563eb; --brand2:#7c3aed;
+    --shadow:0 1px 2px rgba(15,23,42,.04), 0 8px 24px -12px rgba(15,23,42,.12);
+    --shadow-lg:0 2px 4px rgba(15,23,42,.05), 0 18px 40px -18px rgba(15,23,42,.22);
+  }
   * { box-sizing:border-box; }
-  body { margin:0; padding:32px 20px 80px; background:#f9fafb; color:#111827;
-         font:15px/1.6 -apple-system,"PingFang TC","Noto Sans TC",sans-serif; }
-  .wrap { max-width:1080px; margin:0 auto; }
-  h1 { font-size:26px; margin:0 0 6px; }
-  h2 { font-size:19px; margin:40px 0 14px; padding-bottom:8px;
-        border-bottom:2px solid var(--bd); }
-  .sub { color:var(--mut); font-size:13px; margin-bottom:24px; }
-  .card { background:#fff; border:1px solid var(--bd); border-radius:12px;
-           padding:20px; margin-bottom:20px; }
-  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-           gap:14px; margin-bottom:8px; }
-  .kpi { background:#fff; border:1px solid var(--bd); border-radius:12px;
-          padding:18px; text-align:center; }
-  .kv { font-size:30px; font-weight:700; color:#2563eb; line-height:1.2; }
-  .kl { font-size:12px; color:var(--mut); margin-top:4px; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; padding:0 20px 96px; color:var(--ink);
+         background:
+           radial-gradient(1200px 500px at 12% -8%, #eef4ff 0%, transparent 60%),
+           radial-gradient(900px 420px at 92% 2%, #f6f0ff 0%, transparent 55%),
+           #f7f9fc;
+         font:15px/1.65 -apple-system,BlinkMacSystemFont,"PingFang TC",
+              "Noto Sans TC","Microsoft JhengHei",sans-serif;
+         -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:1120px; margin:0 auto; }
+
+  /* ---------- Hero ---------- */
+  .hero { position:relative; overflow:hidden; margin:0 -20px 30px;
+           padding:52px 20px 46px;
+           background:linear-gradient(125deg,#1e3a8a 0%,#2563eb 42%,#7c3aed 100%);
+           color:#fff; }
+  .hero::after { content:""; position:absolute; inset:0;
+           background:radial-gradient(600px 300px at 88% 10%, rgba(255,255,255,.20), transparent 70%),
+                      radial-gradient(500px 260px at 6% 96%, rgba(255,255,255,.12), transparent 70%);
+           pointer-events:none; }
+  .hero-in { max-width:1120px; margin:0 auto; position:relative; z-index:1; }
+  .eyebrow { display:inline-flex; align-items:center; gap:8px;
+              font-size:12px; font-weight:600; letter-spacing:.14em;
+              text-transform:uppercase; opacity:.85; margin-bottom:14px; }
+  .eyebrow::before { content:""; width:26px; height:2px; border-radius:2px;
+              background:rgba(255,255,255,.7); }
+  .hero h1 { font-size:clamp(26px,4vw,40px); line-height:1.2; margin:0 0 12px;
+              font-weight:800; letter-spacing:-.02em; }
+  .hero p { margin:0; font-size:14.5px; opacity:.9; max-width:640px; }
+  .hero-meta { display:flex; gap:10px; flex-wrap:wrap; margin-top:22px; }
+  .pill { display:inline-flex; align-items:center; gap:7px; padding:6px 14px;
+           border-radius:999px; font-size:12.5px; font-weight:600;
+           background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.28);
+           backdrop-filter:blur(6px); }
+  .pill .dot { width:7px; height:7px; border-radius:50%; background:#4ade80;
+                box-shadow:0 0 0 3px rgba(74,222,128,.28); }
+
+  /* ---------- KPI ---------- */
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr));
+           gap:16px; margin:-64px 0 34px; position:relative; z-index:2; }
+  .kpi { position:relative; overflow:hidden; background:#fff;
+          border:1px solid var(--bd); border-radius:16px; padding:22px 20px 20px;
+          box-shadow:var(--shadow-lg); transition:transform .18s ease, box-shadow .18s ease; }
+  .kpi::before { content:""; position:absolute; top:0; left:0; right:0; height:3px;
+          background:linear-gradient(90deg,var(--brand),var(--brand2)); }
+  .kpi:hover { transform:translateY(-3px); box-shadow:0 4px 8px rgba(15,23,42,.06),
+                0 24px 48px -20px rgba(37,99,235,.35); }
+  .kv { font-size:34px; font-weight:800; line-height:1.1; letter-spacing:-.03em;
+         background:linear-gradient(120deg,#1d4ed8,#7c3aed);
+         -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .kl { font-size:12.5px; color:var(--mut); margin-top:6px; font-weight:500; }
+
+  /* ---------- Section ---------- */
+  h2 { display:flex; align-items:center; gap:12px;
+        font-size:19px; font-weight:700; letter-spacing:-.01em;
+        margin:46px 0 16px; }
+  h2 .n { flex:0 0 auto; display:grid; place-items:center; width:28px; height:28px;
+           border-radius:9px; font-size:13px; font-weight:700; color:#fff;
+           background:linear-gradient(135deg,var(--brand),var(--brand2));
+           box-shadow:0 6px 14px -6px rgba(37,99,235,.7); }
+  h2 .hint { margin-left:auto; font-size:12px; font-weight:500; color:var(--mut); }
+
+  .card { background:#fff; border:1px solid var(--bd); border-radius:16px;
+           padding:24px; margin-bottom:20px; box-shadow:var(--shadow); }
+  .card > .muted:first-child { margin-top:0; }
+  .muted { color:var(--mut); font-size:12.5px; }
+  .card p.muted { margin:0 0 16px; line-height:1.7; }
+
   .chart { width:100%; height:auto; display:block; }
-  .donut-wrap { display:flex; align-items:center; gap:28px; flex-wrap:wrap; }
-  .donut { width:240px; height:240px; flex:0 0 auto; }
-  .legend { display:flex; flex-direction:column; gap:8px; font-size:13px; }
-  .lg { display:flex; align-items:center; gap:8px; }
-  .dot { width:11px; height:11px; border-radius:3px; display:inline-block; }
-  .muted { color:var(--mut); font-size:12px; }
-  table { width:100%; border-collapse:collapse; font-size:13px; }
-  th { background:#f3f4f6; text-align:left; padding:9px 10px; font-weight:600;
-        position:sticky; top:0; border-bottom:2px solid var(--bd); }
-  td { padding:8px 10px; border-bottom:1px solid #f3f4f6; vertical-align:top; }
-  tr:hover td { background:#fafafa; }
-  .num { text-align:center; white-space:nowrap; }
-  .ttl { max-width:420px; }
-  .who { font-size:12px; color:#374151; max-width:220px; }
-  .badge { display:inline-block; min-width:26px; padding:1px 7px; border-radius:10px;
-            font-size:11px; font-weight:700; text-align:center; }
-  .b1 { background:#f3f4f6; color:#6b7280; }
-  .b2 { background:#dbeafe; color:#1d4ed8; }
-  .b3 { background:#bfdbfe; color:#1e40af; }
-  .b4 { background:#fde68a; color:#92400e; }
-  .b5 { background:#fecaca; color:#991b1b; }
-  .tag { display:inline-block; padding:1px 8px; border-radius:6px; font-size:11px;
-          font-weight:600; margin-right:6px; white-space:nowrap; }
-  .mem { background:#fff; border:1px solid var(--bd); border-radius:10px;
-          margin-bottom:10px; overflow:hidden; }
-  .mem summary { padding:13px 16px; cursor:pointer; display:flex; gap:14px;
-                  align-items:center; flex-wrap:wrap; }
-  .mem summary:hover { background:#fafafa; }
-  .alias { font-weight:700; font-size:16px; color:#2563eb; min-width:34px; }
-  .needs { font-size:12px; color:#374151; flex:1; min-width:200px; }
-  .mem-body { padding:0 16px 16px; border-top:1px solid #f3f4f6; }
-  .mem-meta { font-size:13px; padding:12px 0; color:#374151; }
+
+  /* ---------- Donut ---------- */
+  .donut-wrap { display:flex; align-items:center; gap:36px; flex-wrap:wrap; }
+  .donut { width:230px; height:230px; flex:0 0 auto;
+            filter:drop-shadow(0 10px 22px rgba(15,23,42,.10)); }
+  .legend { display:flex; flex-direction:column; gap:4px; font-size:13px;
+             flex:1; min-width:220px; }
+  .lg { display:flex; align-items:center; gap:10px; padding:8px 12px;
+         border-radius:10px; transition:background .15s ease; }
+  .lg:hover { background:#f8fafc; }
+  .lg .dot { width:10px; height:10px; border-radius:3px; flex:0 0 auto; }
+  .lg-name { flex:1; color:#334155; }
+  .lg-val { font-variant-numeric:tabular-nums; color:var(--ink); }
+
+  /* ---------- Table ---------- */
+  .scroll { max-height:640px; overflow:auto; border:1px solid var(--bd);
+             border-radius:16px; background:#fff; box-shadow:var(--shadow); }
+  table { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
+  th { position:sticky; top:0; z-index:1; background:#f8fafc;
+        text-align:left; padding:12px 14px; font-weight:700; font-size:12px;
+        letter-spacing:.03em; color:#475569; text-transform:uppercase;
+        border-bottom:1px solid var(--bd); }
+  td { padding:11px 14px; border-bottom:1px solid #f1f5f9; vertical-align:top; }
+  tbody tr:last-child td { border-bottom:none; }
+  tbody tr { transition:background .12s ease; }
+  tbody tr:hover td { background:#f8fbff; }
+  .num { text-align:center; white-space:nowrap; color:#94a3b8;
+          font-variant-numeric:tabular-nums; }
+  .ttl { max-width:430px; line-height:1.5; }
+  .who { font-size:12px; color:#475569; max-width:230px; line-height:1.6; }
+
+  .badge { display:inline-block; min-width:30px; padding:2px 9px; border-radius:999px;
+            font-size:11px; font-weight:700; text-align:center;
+            font-variant-numeric:tabular-nums; }
+  .b1 { background:#f1f5f9; color:#64748b; }
+  .b2 { background:#e0edff; color:#1d4ed8; }
+  .b3 { background:#c7ddff; color:#1e40af; }
+  .b4 { background:#fde9b8; color:#92400e; }
+  .b5 { background:#fecdd3; color:#9f1239; }
+
+  .tag { display:inline-block; padding:2px 9px; border-radius:7px; font-size:11px;
+          font-weight:700; margin-right:8px; white-space:nowrap; }
+
+  /* ---------- Member cards ---------- */
+  .mem { background:#fff; border:1px solid var(--bd); border-radius:14px;
+          margin-bottom:10px; overflow:hidden; box-shadow:var(--shadow);
+          transition:box-shadow .18s ease, border-color .18s ease; }
+  .mem:hover { border-color:#c7d7f5; box-shadow:var(--shadow-lg); }
+  .mem[open] { border-color:#bfd3f7; }
+  .mem summary { padding:15px 18px; cursor:pointer; display:flex; gap:14px;
+                  align-items:center; flex-wrap:wrap; list-style:none; }
+  .mem summary::-webkit-details-marker { display:none; }
+  .mem summary::after { content:"▾"; margin-left:auto; color:#94a3b8;
+                  font-size:13px; transition:transform .2s ease; }
+  .mem[open] summary::after { transform:rotate(180deg); }
+  .mem summary:hover { background:#f8fbff; }
+  .alias { display:grid; place-items:center; width:34px; height:34px; flex:0 0 auto;
+            border-radius:10px; font-weight:800; font-size:14px; color:#fff;
+            background:linear-gradient(135deg,var(--brand),var(--brand2));
+            box-shadow:0 6px 14px -6px rgba(37,99,235,.7); }
+  .needs { font-size:12.5px; color:#475569; flex:1; min-width:200px; }
+  .mem-body { padding:4px 18px 18px; border-top:1px solid #f1f5f9; }
+  .mem-meta { font-size:13px; padding:14px 0; color:#334155; line-height:1.9; }
+  .mem-meta b { color:#0f172a; }
   .items { list-style:none; margin:0; padding:0; }
-  .items li { display:flex; gap:10px; align-items:baseline; padding:6px 0;
-               border-bottom:1px solid #f9fafb; font-size:13px; }
+  .items li { display:flex; gap:12px; align-items:baseline; padding:9px 0;
+               border-bottom:1px solid #f6f8fb; font-size:13px; }
+  .items li:last-child { border-bottom:none; }
   .items .ttl { flex:1; }
-  .scroll { max-height:620px; overflow:auto; border:1px solid var(--bd);
-             border-radius:10px; }
-  .note { background:#fffbeb; border:1px solid #fde68a; border-radius:10px;
-           padding:14px 16px; font-size:13px; color:#92400e; }
+
+  .note { display:flex; gap:10px; align-items:flex-start;
+           background:linear-gradient(180deg,#fffbeb,#fffdf5);
+           border:1px solid #fde68a; border-radius:14px;
+           padding:15px 18px; font-size:13px; color:#92400e; }
+  .note::before { content:"💡"; flex:0 0 auto; }
+
+  footer { margin-top:56px; padding-top:22px; border-top:1px solid var(--bd);
+            text-align:center; color:#94a3b8; font-size:12px; }
+
+  @media (max-width:640px) {
+    .hero { padding:38px 20px 34px; }
+    .kpis { margin-top:-48px; gap:12px; }
+    .kpi { padding:18px 16px; }
+    .kv { font-size:28px; }
+    .card { padding:18px; }
+    .donut-wrap { gap:20px; justify-content:center; }
+    .ttl { max-width:none; }
+    .who { max-width:none; }
+  }
+  @media print {
+    body { background:#fff; padding:0; }
+    .hero { background:#1e3a8a !important; -webkit-print-color-adjust:exact; }
+    .mem, .card, .scroll { box-shadow:none; }
+    .mem { break-inside:avoid; }
+  }
 </style>
 </head>
 <body>
+<header class="hero">
+  <div class="hero-in">
+    <div class="eyebrow">ROKA IZUMI · AI 選品分析</div>
+    <h1>會員推薦統計分析</h1>
+    <p>以 AI 為每位會員配對日本最新高階與高 CP 值面膜，並統計全體推薦商品的重複度與長尾結構。</p>
+    <div class="hero-meta">
+      <span class="pill"><span class="dot"></span>會員名稱已匿名</span>
+      <span class="pill">產生時間 2026-10-09 03:33</span>
+      <span class="pill">可公開分享</span>
+    </div>
+  </div>
+</header>
 <div class="wrap">
-  <h1>會員推薦統計分析</h1>
-  <div class="sub">產生時間 2026-10-08 21:58　·　會員名稱已匿名為 A、B、C…</div>
-
   
     <div class="kpis">
       <div class="kpi"><div class="kv">34</div><div class="kl">會員數</div></div>
@@ -79,32 +201,32 @@
       <div class="kpi"><div class="kv">46%</div><div class="kl">專屬商品佔比</div></div>
     </div>
 
-  <h2>推薦商品重複度分布</h2>
+  <h2><span class="n">1</span>推薦商品重複度分布<span class="hint">越左越熱門 · 越右越個人化</span></h2>
   <div class="card">
     <p class="muted">X 軸為「被推薦的會員數」，Y 軸為「商品數」。
        越靠左代表越多人共用同一商品，越靠右代表越個人化。</p>
-    <svg viewBox="0 0 760 260" class="chart"><line x1="44" y1="216.0" x2="716" y2="216.0" stroke="#e5e7eb" stroke-width="1"/><text x="36" y="220.0" text-anchor="end" font-size="11" fill="#9ca3af">0</text><line x1="44" y1="173.0" x2="716" y2="173.0" stroke="#e5e7eb" stroke-width="1"/><text x="36" y="177.0" text-anchor="end" font-size="11" fill="#9ca3af">21</text><line x1="44" y1="130.0" x2="716" y2="130.0" stroke="#e5e7eb" stroke-width="1"/><text x="36" y="134.0" text-anchor="end" font-size="11" fill="#9ca3af">42</text><line x1="44" y1="87.0" x2="716" y2="87.0" stroke="#e5e7eb" stroke-width="1"/><text x="36" y="91.0" text-anchor="end" font-size="11" fill="#9ca3af">62</text><line x1="44" y1="44.0" x2="716" y2="44.0" stroke="#e5e7eb" stroke-width="1"/><text x="36" y="48.0" text-anchor="end" font-size="11" fill="#9ca3af">83</text><path d="M44.0,213.9 L86.0,216.0 L128.0,216.0 L170.0,213.9 L212.0,213.9 L254.0,213.9 L296.0,207.7 L338.0,213.9 L380.0,213.9 L422.0,213.9 L464.0,203.6 L506.0,201.5 L548.0,197.3 L590.0,191.1 L632.0,176.6 L674.0,147.6 L716.0,44.0 L716.0,216.0 L44.0,216.0 Z" fill="#2563eb" opacity="0.10"/><path d="M44.0,213.9 L86.0,216.0 L128.0,216.0 L170.0,213.9 L212.0,213.9 L254.0,213.9 L296.0,207.7 L338.0,213.9 L380.0,213.9 L422.0,213.9 L464.0,203.6 L506.0,201.5 L548.0,197.3 L590.0,191.1 L632.0,176.6 L674.0,147.6 L716.0,44.0" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round"/><circle cx="44.0" cy="213.9" r="4" fill="#2563eb"><title>17人：1</title></circle><circle cx="86.0" cy="216.0" r="4" fill="#2563eb"><title>16人：0</title></circle><circle cx="128.0" cy="216.0" r="4" fill="#2563eb"><title>15人：0</title></circle><circle cx="170.0" cy="213.9" r="4" fill="#2563eb"><title>14人：1</title></circle><circle cx="212.0" cy="213.9" r="4" fill="#2563eb"><title>13人：1</title></circle><circle cx="254.0" cy="213.9" r="4" fill="#2563eb"><title>12人：1</title></circle><circle cx="296.0" cy="207.7" r="4" fill="#2563eb"><title>11人：4</title></circle><circle cx="338.0" cy="213.9" r="4" fill="#2563eb"><title>10人：1</title></circle><circle cx="380.0" cy="213.9" r="4" fill="#2563eb"><title>9人：1</title></circle><circle cx="422.0" cy="213.9" r="4" fill="#2563eb"><title>8人：1</title></circle><circle cx="464.0" cy="203.6" r="4" fill="#2563eb"><title>7人：6</title></circle><circle cx="506.0" cy="201.5" r="4" fill="#2563eb"><title>6人：7</title></circle><circle cx="548.0" cy="197.3" r="4" fill="#2563eb"><title>5人：9</title></circle><circle cx="590.0" cy="191.1" r="4" fill="#2563eb"><title>4人：12</title></circle><circle cx="632.0" cy="176.6" r="4" fill="#2563eb"><title>3人：19</title></circle><circle cx="674.0" cy="147.6" r="4" fill="#2563eb"><title>2人：33</title></circle><circle cx="716.0" cy="44.0" r="4" fill="#2563eb"><title>1人：83</title></circle><text x="44.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">17人</text><text x="86.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">16人</text><text x="128.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">15人</text><text x="170.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">14人</text><text x="212.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">13人</text><text x="254.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">12人</text><text x="296.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">11人</text><text x="338.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">10人</text><text x="380.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">9人</text><text x="422.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">8人</text><text x="464.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">7人</text><text x="506.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">6人</text><text x="548.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">5人</text><text x="590.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">4人</text><text x="632.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">3人</text><text x="674.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">2人</text><text x="716.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">1人</text></svg>
+    <svg viewBox="0 0 760 260" class="chart" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="ln1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2563eb" stop-opacity="0.28"/><stop offset="100%" stop-color="#2563eb" stop-opacity="0.02"/></linearGradient></defs><line x1="44" y1="216.0" x2="716" y2="216.0" stroke="#eef2f7" stroke-width="1"/><text x="34" y="220.0" text-anchor="end" font-size="11" fill="#9aa4b2">0</text><line x1="44" y1="173.0" x2="716" y2="173.0" stroke="#eef2f7" stroke-width="1"/><text x="34" y="177.0" text-anchor="end" font-size="11" fill="#9aa4b2">21</text><line x1="44" y1="130.0" x2="716" y2="130.0" stroke="#eef2f7" stroke-width="1"/><text x="34" y="134.0" text-anchor="end" font-size="11" fill="#9aa4b2">42</text><line x1="44" y1="87.0" x2="716" y2="87.0" stroke="#eef2f7" stroke-width="1"/><text x="34" y="91.0" text-anchor="end" font-size="11" fill="#9aa4b2">62</text><line x1="44" y1="44.0" x2="716" y2="44.0" stroke="#eef2f7" stroke-width="1"/><text x="34" y="48.0" text-anchor="end" font-size="11" fill="#9aa4b2">83</text><path d="M44.0,213.9 L86.0,216.0 L128.0,216.0 L170.0,213.9 L212.0,213.9 L254.0,213.9 L296.0,207.7 L338.0,213.9 L380.0,213.9 L422.0,213.9 L464.0,203.6 L506.0,201.5 L548.0,197.3 L590.0,191.1 L632.0,176.6 L674.0,147.6 L716.0,44.0 L716.0,216.0 L44.0,216.0 Z" fill="url(#ln1)"/><path d="M44.0,213.9 L86.0,216.0 L128.0,216.0 L170.0,213.9 L212.0,213.9 L254.0,213.9 L296.0,207.7 L338.0,213.9 L380.0,213.9 L422.0,213.9 L464.0,203.6 L506.0,201.5 L548.0,197.3 L590.0,191.1 L632.0,176.6 L674.0,147.6 L716.0,44.0" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="44.0" cy="213.9" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>17人：1</title></circle><circle cx="86.0" cy="216.0" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>16人：0</title></circle><circle cx="128.0" cy="216.0" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>15人：0</title></circle><circle cx="170.0" cy="213.9" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>14人：1</title></circle><circle cx="212.0" cy="213.9" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>13人：1</title></circle><circle cx="254.0" cy="213.9" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>12人：1</title></circle><circle cx="296.0" cy="207.7" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>11人：4</title></circle><circle cx="338.0" cy="213.9" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>10人：1</title></circle><circle cx="380.0" cy="213.9" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>9人：1</title></circle><circle cx="422.0" cy="213.9" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>8人：1</title></circle><circle cx="464.0" cy="203.6" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>7人：6</title></circle><circle cx="506.0" cy="201.5" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>6人：7</title></circle><circle cx="548.0" cy="197.3" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>5人：9</title></circle><circle cx="590.0" cy="191.1" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>4人：12</title></circle><circle cx="632.0" cy="176.6" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>3人：19</title></circle><circle cx="674.0" cy="147.6" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>2人：33</title></circle><circle cx="716.0" cy="44.0" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2.5"><title>1人：83</title></circle><text x="44.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">17人</text><text x="86.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">16人</text><text x="128.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">15人</text><text x="170.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">14人</text><text x="212.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">13人</text><text x="254.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">12人</text><text x="296.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">11人</text><text x="338.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">10人</text><text x="380.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">9人</text><text x="422.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">8人</text><text x="464.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">7人</text><text x="506.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">6人</text><text x="548.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">5人</text><text x="590.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">4人</text><text x="632.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">3人</text><text x="674.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">2人</text><text x="716.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">1人</text></svg>
   </div>
 
-  <h2>累計商品數</h2>
+  <h2><span class="n">2</span>累計商品數<span class="hint">長尾結構</span></h2>
   <div class="card">
     <p class="muted">由高重複度往低重複度累加，可看出「少數熱門款 + 大量專屬款」的長尾結構。</p>
-    <svg viewBox="0 0 760 260" class="chart"><line x1="44" y1="216.0" x2="716" y2="216.0" stroke="#e5e7eb" stroke-width="1"/><text x="36" y="220.0" text-anchor="end" font-size="11" fill="#9ca3af">0</text><line x1="44" y1="173.0" x2="716" y2="173.0" stroke="#e5e7eb" stroke-width="1"/><text x="36" y="177.0" text-anchor="end" font-size="11" fill="#9ca3af">45</text><line x1="44" y1="130.0" x2="716" y2="130.0" stroke="#e5e7eb" stroke-width="1"/><text x="36" y="134.0" text-anchor="end" font-size="11" fill="#9ca3af">90</text><line x1="44" y1="87.0" x2="716" y2="87.0" stroke="#e5e7eb" stroke-width="1"/><text x="36" y="91.0" text-anchor="end" font-size="11" fill="#9ca3af">135</text><line x1="44" y1="44.0" x2="716" y2="44.0" stroke="#e5e7eb" stroke-width="1"/><text x="36" y="48.0" text-anchor="end" font-size="11" fill="#9ca3af">180</text><path d="M44.0,215.0 L86.0,215.0 L128.0,215.0 L170.0,214.1 L212.0,213.1 L254.0,212.2 L296.0,208.4 L338.0,207.4 L380.0,206.4 L422.0,205.5 L464.0,199.8 L506.0,193.1 L548.0,184.5 L590.0,173.0 L632.0,154.8 L674.0,123.3 L716.0,44.0 L716.0,216.0 L44.0,216.0 Z" fill="#7c3aed" opacity="0.10"/><path d="M44.0,215.0 L86.0,215.0 L128.0,215.0 L170.0,214.1 L212.0,213.1 L254.0,212.2 L296.0,208.4 L338.0,207.4 L380.0,206.4 L422.0,205.5 L464.0,199.8 L506.0,193.1 L548.0,184.5 L590.0,173.0 L632.0,154.8 L674.0,123.3 L716.0,44.0" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linejoin="round"/><circle cx="44.0" cy="215.0" r="4" fill="#7c3aed"><title>17人：1</title></circle><circle cx="86.0" cy="215.0" r="4" fill="#7c3aed"><title>16人：1</title></circle><circle cx="128.0" cy="215.0" r="4" fill="#7c3aed"><title>15人：1</title></circle><circle cx="170.0" cy="214.1" r="4" fill="#7c3aed"><title>14人：2</title></circle><circle cx="212.0" cy="213.1" r="4" fill="#7c3aed"><title>13人：3</title></circle><circle cx="254.0" cy="212.2" r="4" fill="#7c3aed"><title>12人：4</title></circle><circle cx="296.0" cy="208.4" r="4" fill="#7c3aed"><title>11人：8</title></circle><circle cx="338.0" cy="207.4" r="4" fill="#7c3aed"><title>10人：9</title></circle><circle cx="380.0" cy="206.4" r="4" fill="#7c3aed"><title>9人：10</title></circle><circle cx="422.0" cy="205.5" r="4" fill="#7c3aed"><title>8人：11</title></circle><circle cx="464.0" cy="199.8" r="4" fill="#7c3aed"><title>7人：17</title></circle><circle cx="506.0" cy="193.1" r="4" fill="#7c3aed"><title>6人：24</title></circle><circle cx="548.0" cy="184.5" r="4" fill="#7c3aed"><title>5人：33</title></circle><circle cx="590.0" cy="173.0" r="4" fill="#7c3aed"><title>4人：45</title></circle><circle cx="632.0" cy="154.8" r="4" fill="#7c3aed"><title>3人：64</title></circle><circle cx="674.0" cy="123.3" r="4" fill="#7c3aed"><title>2人：97</title></circle><circle cx="716.0" cy="44.0" r="4" fill="#7c3aed"><title>1人：180</title></circle><text x="44.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">17人</text><text x="86.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">16人</text><text x="128.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">15人</text><text x="170.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">14人</text><text x="212.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">13人</text><text x="254.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">12人</text><text x="296.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">11人</text><text x="338.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">10人</text><text x="380.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">9人</text><text x="422.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">8人</text><text x="464.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">7人</text><text x="506.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">6人</text><text x="548.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">5人</text><text x="590.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">4人</text><text x="632.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">3人</text><text x="674.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">2人</text><text x="716.0" y="234" text-anchor="middle" font-size="11" fill="#6b7280">1人</text></svg>
+    <svg viewBox="0 0 760 260" class="chart" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="ln2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7c3aed" stop-opacity="0.28"/><stop offset="100%" stop-color="#7c3aed" stop-opacity="0.02"/></linearGradient></defs><line x1="44" y1="216.0" x2="716" y2="216.0" stroke="#eef2f7" stroke-width="1"/><text x="34" y="220.0" text-anchor="end" font-size="11" fill="#9aa4b2">0</text><line x1="44" y1="173.0" x2="716" y2="173.0" stroke="#eef2f7" stroke-width="1"/><text x="34" y="177.0" text-anchor="end" font-size="11" fill="#9aa4b2">45</text><line x1="44" y1="130.0" x2="716" y2="130.0" stroke="#eef2f7" stroke-width="1"/><text x="34" y="134.0" text-anchor="end" font-size="11" fill="#9aa4b2">90</text><line x1="44" y1="87.0" x2="716" y2="87.0" stroke="#eef2f7" stroke-width="1"/><text x="34" y="91.0" text-anchor="end" font-size="11" fill="#9aa4b2">135</text><line x1="44" y1="44.0" x2="716" y2="44.0" stroke="#eef2f7" stroke-width="1"/><text x="34" y="48.0" text-anchor="end" font-size="11" fill="#9aa4b2">180</text><path d="M44.0,215.0 L86.0,215.0 L128.0,215.0 L170.0,214.1 L212.0,213.1 L254.0,212.2 L296.0,208.4 L338.0,207.4 L380.0,206.4 L422.0,205.5 L464.0,199.8 L506.0,193.1 L548.0,184.5 L590.0,173.0 L632.0,154.8 L674.0,123.3 L716.0,44.0 L716.0,216.0 L44.0,216.0 Z" fill="url(#ln2)"/><path d="M44.0,215.0 L86.0,215.0 L128.0,215.0 L170.0,214.1 L212.0,213.1 L254.0,212.2 L296.0,208.4 L338.0,207.4 L380.0,206.4 L422.0,205.5 L464.0,199.8 L506.0,193.1 L548.0,184.5 L590.0,173.0 L632.0,154.8 L674.0,123.3 L716.0,44.0" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="44.0" cy="215.0" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>17人：1</title></circle><circle cx="86.0" cy="215.0" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>16人：1</title></circle><circle cx="128.0" cy="215.0" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>15人：1</title></circle><circle cx="170.0" cy="214.1" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>14人：2</title></circle><circle cx="212.0" cy="213.1" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>13人：3</title></circle><circle cx="254.0" cy="212.2" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>12人：4</title></circle><circle cx="296.0" cy="208.4" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>11人：8</title></circle><circle cx="338.0" cy="207.4" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>10人：9</title></circle><circle cx="380.0" cy="206.4" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>9人：10</title></circle><circle cx="422.0" cy="205.5" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>8人：11</title></circle><circle cx="464.0" cy="199.8" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>7人：17</title></circle><circle cx="506.0" cy="193.1" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>6人：24</title></circle><circle cx="548.0" cy="184.5" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>5人：33</title></circle><circle cx="590.0" cy="173.0" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>4人：45</title></circle><circle cx="632.0" cy="154.8" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>3人：64</title></circle><circle cx="674.0" cy="123.3" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>2人：97</title></circle><circle cx="716.0" cy="44.0" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2.5"><title>1人：180</title></circle><text x="44.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">17人</text><text x="86.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">16人</text><text x="128.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">15人</text><text x="170.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">14人</text><text x="212.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">13人</text><text x="254.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">12人</text><text x="296.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">11人</text><text x="338.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">10人</text><text x="380.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">9人</text><text x="422.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">8人</text><text x="464.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">7人</text><text x="506.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">6人</text><text x="548.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">5人</text><text x="590.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">4人</text><text x="632.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">3人</text><text x="674.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">2人</text><text x="716.0" y="236" text-anchor="middle" font-size="11" fill="#6b7280">1人</text></svg>
   </div>
 
-  <h2>需求分布</h2>
-  <div class="card"><svg viewBox="0 0 760 478" class="chart"><text x="140" y="59" text-anchor="end" font-size="12" fill="#374151">補水保濕</text><rect x="150" y="47" width="566.0" height="17" rx="3" fill="#0891b2"><title>補水保濕：27</title></rect><text x="724.0" y="59" font-size="11" fill="#6b7280">27</text><text x="140" y="85" text-anchor="end" font-size="12" fill="#374151">彈性緊緻</text><rect x="150" y="73" width="356.4" height="17" rx="3" fill="#0891b2"><title>彈性緊緻：17</title></rect><text x="514.4" y="85" font-size="11" fill="#6b7280">17</text><text x="140" y="111" text-anchor="end" font-size="12" fill="#374151">熟齡細紋保養</text><rect x="150" y="99" width="335.4" height="17" rx="3" fill="#0891b2"><title>熟齡細紋保養：16</title></rect><text x="493.4" y="111" font-size="11" fill="#6b7280">16</text><text x="140" y="137" text-anchor="end" font-size="12" fill="#374151">眼周乾燥細紋</text><rect x="150" y="125" width="209.6" height="17" rx="3" fill="#0891b2"><title>眼周乾燥細紋：10</title></rect><text x="367.6" y="137" font-size="11" fill="#6b7280">10</text><text x="140" y="163" text-anchor="end" font-size="12" fill="#374151">暗沉提亮</text><rect x="150" y="151" width="188.7" height="17" rx="3" fill="#0891b2"><title>暗沉提亮：9</title></rect><text x="346.7" y="163" font-size="11" fill="#6b7280">9</text><text x="140" y="189" text-anchor="end" font-size="12" fill="#374151">高機能成分</text><rect x="150" y="177" width="146.7" height="17" rx="3" fill="#0891b2"><title>高機能成分：7</title></rect><text x="304.7" y="189" font-size="11" fill="#6b7280">7</text><text x="140" y="215" text-anchor="end" font-size="12" fill="#374151">乾燥粗糙修護</text><rect x="150" y="203" width="146.7" height="17" rx="3" fill="#0891b2"><title>乾燥粗糙修護：7</title></rect><text x="304.7" y="215" font-size="11" fill="#6b7280">7</text><text x="140" y="241" text-anchor="end" font-size="12" fill="#374151">夜間修護</text><rect x="150" y="229" width="125.8" height="17" rx="3" fill="#0891b2"><title>夜間修護：6</title></rect><text x="283.8" y="241" font-size="11" fill="#6b7280">6</text><text x="140" y="267" text-anchor="end" font-size="12" fill="#374151">敏感舒緩</text><rect x="150" y="255" width="125.8" height="17" rx="3" fill="#0891b2"><title>敏感舒緩：6</title></rect><text x="283.8" y="267" font-size="11" fill="#6b7280">6</text><text x="140" y="293" text-anchor="end" font-size="12" fill="#374151">眼周暗沉疲態</text><rect x="150" y="281" width="104.8" height="17" rx="3" fill="#0891b2"><title>眼周暗沉疲態：5</title></rect><text x="262.8" y="293" font-size="11" fill="#6b7280">5</text><text x="140" y="319" text-anchor="end" font-size="12" fill="#374151">想嘗試新品</text><rect x="150" y="307" width="104.8" height="17" rx="3" fill="#0891b2"><title>想嘗試新品：5</title></rect><text x="262.8" y="319" font-size="11" fill="#6b7280">5</text><text x="140" y="345" text-anchor="end" font-size="12" fill="#374151">毛孔與肌理</text><rect x="150" y="333" width="83.9" height="17" rx="3" fill="#0891b2"><title>毛孔與肌理：4</title></rect><text x="241.9" y="345" font-size="11" fill="#6b7280">4</text><text x="140" y="371" text-anchor="end" font-size="12" fill="#374151">油脂痘肌保養</text><rect x="150" y="359" width="83.9" height="17" rx="3" fill="#0891b2"><title>油脂痘肌保養：4</title></rect><text x="241.9" y="371" font-size="11" fill="#6b7280">4</text><text x="140" y="397" text-anchor="end" font-size="12" fill="#374151">溫和日常保養</text><rect x="150" y="385" width="41.9" height="17" rx="3" fill="#0891b2"><title>溫和日常保養：2</title></rect><text x="199.9" y="397" font-size="11" fill="#6b7280">2</text><text x="140" y="423" text-anchor="end" font-size="12" fill="#374151">大容量高CP值</text><rect x="150" y="411" width="41.9" height="17" rx="3" fill="#0891b2"><title>大容量高CP值：2</title></rect><text x="199.9" y="423" font-size="11" fill="#6b7280">2</text></svg></div>
+  <h2><span class="n">3</span>需求分布<span class="hint">全體會員</span></h2>
+  <div class="card"><svg viewBox="0 0 760 538" class="chart" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="bar3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0891b2" stop-opacity="0.95"/><stop offset="100%" stop-color="#0891b2" stop-opacity="0.55"/></linearGradient></defs><text x="138" y="60" text-anchor="end" font-size="12" fill="#374151">補水保濕</text><rect x="150" y="48" width="566.0" height="19" rx="5" fill="url(#bar3)"><title>補水保濕：27</title></rect><text x="725.0" y="60" font-size="11.5" font-weight="600" fill="#6b7280">27</text><text x="138" y="90" text-anchor="end" font-size="12" fill="#374151">彈性緊緻</text><rect x="150" y="78" width="356.4" height="19" rx="5" fill="url(#bar3)"><title>彈性緊緻：17</title></rect><text x="515.4" y="90" font-size="11.5" font-weight="600" fill="#6b7280">17</text><text x="138" y="120" text-anchor="end" font-size="12" fill="#374151">熟齡細紋保養</text><rect x="150" y="108" width="335.4" height="19" rx="5" fill="url(#bar3)"><title>熟齡細紋保養：16</title></rect><text x="494.4" y="120" font-size="11.5" font-weight="600" fill="#6b7280">16</text><text x="138" y="150" text-anchor="end" font-size="12" fill="#374151">眼周乾燥細紋</text><rect x="150" y="138" width="209.6" height="19" rx="5" fill="url(#bar3)"><title>眼周乾燥細紋：10</title></rect><text x="368.6" y="150" font-size="11.5" font-weight="600" fill="#6b7280">10</text><text x="138" y="180" text-anchor="end" font-size="12" fill="#374151">暗沉提亮</text><rect x="150" y="168" width="188.7" height="19" rx="5" fill="url(#bar3)"><title>暗沉提亮：9</title></rect><text x="347.7" y="180" font-size="11.5" font-weight="600" fill="#6b7280">9</text><text x="138" y="210" text-anchor="end" font-size="12" fill="#374151">高機能成分</text><rect x="150" y="198" width="146.7" height="19" rx="5" fill="url(#bar3)"><title>高機能成分：7</title></rect><text x="305.7" y="210" font-size="11.5" font-weight="600" fill="#6b7280">7</text><text x="138" y="240" text-anchor="end" font-size="12" fill="#374151">乾燥粗糙修護</text><rect x="150" y="228" width="146.7" height="19" rx="5" fill="url(#bar3)"><title>乾燥粗糙修護：7</title></rect><text x="305.7" y="240" font-size="11.5" font-weight="600" fill="#6b7280">7</text><text x="138" y="270" text-anchor="end" font-size="12" fill="#374151">夜間修護</text><rect x="150" y="258" width="125.8" height="19" rx="5" fill="url(#bar3)"><title>夜間修護：6</title></rect><text x="284.8" y="270" font-size="11.5" font-weight="600" fill="#6b7280">6</text><text x="138" y="300" text-anchor="end" font-size="12" fill="#374151">敏感舒緩</text><rect x="150" y="288" width="125.8" height="19" rx="5" fill="url(#bar3)"><title>敏感舒緩：6</title></rect><text x="284.8" y="300" font-size="11.5" font-weight="600" fill="#6b7280">6</text><text x="138" y="330" text-anchor="end" font-size="12" fill="#374151">眼周暗沉疲態</text><rect x="150" y="318" width="104.8" height="19" rx="5" fill="url(#bar3)"><title>眼周暗沉疲態：5</title></rect><text x="263.8" y="330" font-size="11.5" font-weight="600" fill="#6b7280">5</text><text x="138" y="360" text-anchor="end" font-size="12" fill="#374151">想嘗試新品</text><rect x="150" y="348" width="104.8" height="19" rx="5" fill="url(#bar3)"><title>想嘗試新品：5</title></rect><text x="263.8" y="360" font-size="11.5" font-weight="600" fill="#6b7280">5</text><text x="138" y="390" text-anchor="end" font-size="12" fill="#374151">毛孔與肌理</text><rect x="150" y="378" width="83.9" height="19" rx="5" fill="url(#bar3)"><title>毛孔與肌理：4</title></rect><text x="242.9" y="390" font-size="11.5" font-weight="600" fill="#6b7280">4</text><text x="138" y="420" text-anchor="end" font-size="12" fill="#374151">油脂痘肌保養</text><rect x="150" y="408" width="83.9" height="19" rx="5" fill="url(#bar3)"><title>油脂痘肌保養：4</title></rect><text x="242.9" y="420" font-size="11.5" font-weight="600" fill="#6b7280">4</text><text x="138" y="450" text-anchor="end" font-size="12" fill="#374151">溫和日常保養</text><rect x="150" y="438" width="41.9" height="19" rx="5" fill="url(#bar3)"><title>溫和日常保養：2</title></rect><text x="200.9" y="450" font-size="11.5" font-weight="600" fill="#6b7280">2</text><text x="138" y="480" text-anchor="end" font-size="12" fill="#374151">大容量高CP值</text><rect x="150" y="468" width="41.9" height="19" rx="5" fill="url(#bar3)"><title>大容量高CP值：2</title></rect><text x="200.9" y="480" font-size="11.5" font-weight="600" fill="#6b7280">2</text></svg></div>
 
-  <h2>偏好成分分布</h2>
-  <div class="card"><svg viewBox="0 0 760 400" class="chart"><text x="140" y="59" text-anchor="end" font-size="12" fill="#374151">玻尿酸/膠原</text><rect x="150" y="47" width="566.0" height="17" rx="3" fill="#db2777"><title>玻尿酸/膠原：14</title></rect><text x="724.0" y="59" font-size="11" fill="#6b7280">14</text><text x="140" y="85" text-anchor="end" font-size="12" fill="#374151">PDRN/外泌體幹細胞系</text><rect x="150" y="73" width="525.6" height="17" rx="3" fill="#db2777"><title>PDRN/外泌體幹細胞系：13</title></rect><text x="683.6" y="85" font-size="11" fill="#6b7280">13</text><text x="140" y="111" text-anchor="end" font-size="12" fill="#374151">CICA積雪草</text><rect x="150" y="99" width="323.4" height="17" rx="3" fill="#db2777"><title>CICA積雪草：8</title></rect><text x="481.4" y="111" font-size="11" fill="#6b7280">8</text><text x="140" y="137" text-anchor="end" font-size="12" fill="#374151">穀胱甘肽</text><rect x="150" y="125" width="323.4" height="17" rx="3" fill="#db2777"><title>穀胱甘肽：8</title></rect><text x="481.4" y="137" font-size="11" fill="#6b7280">8</text><text x="140" y="163" text-anchor="end" font-size="12" fill="#374151">沒有偏好由AI決定</text><rect x="150" y="151" width="323.4" height="17" rx="3" fill="#db2777"><title>沒有偏好由AI決定：8</title></rect><text x="481.4" y="163" font-size="11" fill="#6b7280">8</text><text x="140" y="189" text-anchor="end" font-size="12" fill="#374151">維他命C</text><rect x="150" y="177" width="242.6" height="17" rx="3" fill="#db2777"><title>維他命C：6</title></rect><text x="400.6" y="189" font-size="11" fill="#6b7280">6</text><text x="140" y="215" text-anchor="end" font-size="12" fill="#374151">茶樹</text><rect x="150" y="203" width="242.6" height="17" rx="3" fill="#db2777"><title>茶樹：6</title></rect><text x="400.6" y="215" font-size="11" fill="#6b7280">6</text><text x="140" y="241" text-anchor="end" font-size="12" fill="#374151">菸鹼醯胺</text><rect x="150" y="229" width="202.1" height="17" rx="3" fill="#db2777"><title>菸鹼醯胺：5</title></rect><text x="360.1" y="241" font-size="11" fill="#6b7280">5</text><text x="140" y="267" text-anchor="end" font-size="12" fill="#374151">視黃醇/類視黃醇</text><rect x="150" y="255" width="121.3" height="17" rx="3" fill="#db2777"><title>視黃醇/類視黃醇：3</title></rect><text x="279.3" y="267" font-size="11" fill="#6b7280">3</text><text x="140" y="293" text-anchor="end" font-size="12" fill="#374151">酵母/發酵系</text><rect x="150" y="281" width="121.3" height="17" rx="3" fill="#db2777"><title>酵母/發酵系：3</title></rect><text x="279.3" y="293" font-size="11" fill="#6b7280">3</text><text x="140" y="319" text-anchor="end" font-size="12" fill="#374151">米/薏仁系</text><rect x="150" y="307" width="121.3" height="17" rx="3" fill="#db2777"><title>米/薏仁系：3</title></rect><text x="279.3" y="319" font-size="11" fill="#6b7280">3</text><text x="140" y="345" text-anchor="end" font-size="12" fill="#374151">NMN</text><rect x="150" y="333" width="80.9" height="17" rx="3" fill="#db2777"><title>NMN：2</title></rect><text x="238.9" y="345" font-size="11" fill="#6b7280">2</text></svg></div>
+  <h2><span class="n">4</span>偏好成分分布<span class="hint">全體會員</span></h2>
+  <div class="card"><svg viewBox="0 0 760 448" class="chart" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="bar4" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#db2777" stop-opacity="0.95"/><stop offset="100%" stop-color="#db2777" stop-opacity="0.55"/></linearGradient></defs><text x="138" y="60" text-anchor="end" font-size="12" fill="#374151">玻尿酸/膠原</text><rect x="150" y="48" width="566.0" height="19" rx="5" fill="url(#bar4)"><title>玻尿酸/膠原：14</title></rect><text x="725.0" y="60" font-size="11.5" font-weight="600" fill="#6b7280">14</text><text x="138" y="90" text-anchor="end" font-size="12" fill="#374151">PDRN/外泌體幹細胞系</text><rect x="150" y="78" width="525.6" height="19" rx="5" fill="url(#bar4)"><title>PDRN/外泌體幹細胞系：13</title></rect><text x="684.6" y="90" font-size="11.5" font-weight="600" fill="#6b7280">13</text><text x="138" y="120" text-anchor="end" font-size="12" fill="#374151">CICA積雪草</text><rect x="150" y="108" width="323.4" height="19" rx="5" fill="url(#bar4)"><title>CICA積雪草：8</title></rect><text x="482.4" y="120" font-size="11.5" font-weight="600" fill="#6b7280">8</text><text x="138" y="150" text-anchor="end" font-size="12" fill="#374151">穀胱甘肽</text><rect x="150" y="138" width="323.4" height="19" rx="5" fill="url(#bar4)"><title>穀胱甘肽：8</title></rect><text x="482.4" y="150" font-size="11.5" font-weight="600" fill="#6b7280">8</text><text x="138" y="180" text-anchor="end" font-size="12" fill="#374151">沒有偏好由AI決定</text><rect x="150" y="168" width="323.4" height="19" rx="5" fill="url(#bar4)"><title>沒有偏好由AI決定：8</title></rect><text x="482.4" y="180" font-size="11.5" font-weight="600" fill="#6b7280">8</text><text x="138" y="210" text-anchor="end" font-size="12" fill="#374151">維他命C</text><rect x="150" y="198" width="242.6" height="19" rx="5" fill="url(#bar4)"><title>維他命C：6</title></rect><text x="401.6" y="210" font-size="11.5" font-weight="600" fill="#6b7280">6</text><text x="138" y="240" text-anchor="end" font-size="12" fill="#374151">茶樹</text><rect x="150" y="228" width="242.6" height="19" rx="5" fill="url(#bar4)"><title>茶樹：6</title></rect><text x="401.6" y="240" font-size="11.5" font-weight="600" fill="#6b7280">6</text><text x="138" y="270" text-anchor="end" font-size="12" fill="#374151">菸鹼醯胺</text><rect x="150" y="258" width="202.1" height="19" rx="5" fill="url(#bar4)"><title>菸鹼醯胺：5</title></rect><text x="361.1" y="270" font-size="11.5" font-weight="600" fill="#6b7280">5</text><text x="138" y="300" text-anchor="end" font-size="12" fill="#374151">視黃醇/類視黃醇</text><rect x="150" y="288" width="121.3" height="19" rx="5" fill="url(#bar4)"><title>視黃醇/類視黃醇：3</title></rect><text x="280.3" y="300" font-size="11.5" font-weight="600" fill="#6b7280">3</text><text x="138" y="330" text-anchor="end" font-size="12" fill="#374151">酵母/發酵系</text><rect x="150" y="318" width="121.3" height="19" rx="5" fill="url(#bar4)"><title>酵母/發酵系：3</title></rect><text x="280.3" y="330" font-size="11.5" font-weight="600" fill="#6b7280">3</text><text x="138" y="360" text-anchor="end" font-size="12" fill="#374151">米/薏仁系</text><rect x="150" y="348" width="121.3" height="19" rx="5" fill="url(#bar4)"><title>米/薏仁系：3</title></rect><text x="280.3" y="360" font-size="11.5" font-weight="600" fill="#6b7280">3</text><text x="138" y="390" text-anchor="end" font-size="12" fill="#374151">NMN</text><rect x="150" y="378" width="80.9" height="19" rx="5" fill="url(#bar4)"><title>NMN：2</title></rect><text x="239.9" y="390" font-size="11.5" font-weight="600" fill="#6b7280">2</text></svg></div>
 
-  <h2>推薦來源分布</h2>
-  <div class="card"><div class="donut-wrap"><svg viewBox="0 0 240 240" class="donut"><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#2563eb" stroke-width="30" stroke-dasharray="163.36 490.09" stroke-dashoffset="-0.00" transform="rotate(-90 120.0 120.0)"><title>店內現貨：170（33.3%）</title></circle><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#7c3aed" stroke-width="30" stroke-dasharray="130.69 490.09" stroke-dashoffset="-163.36" transform="rotate(-90 120.0 120.0)"><title>楽天市場：136（26.7%）</title></circle><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#059669" stroke-width="30" stroke-dasharray="129.73 490.09" stroke-dashoffset="-294.05" transform="rotate(-90 120.0 120.0)"><title>Amazon：135（26.5%）</title></circle><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#d97706" stroke-width="30" stroke-dasharray="57.66 490.09" stroke-dashoffset="-423.78" transform="rotate(-90 120.0 120.0)"><title>Qoo10：60（11.8%）</title></circle><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#dc2626" stroke-width="30" stroke-dasharray="8.65 490.09" stroke-dashoffset="-481.44" transform="rotate(-90 120.0 120.0)"><title>ヨドバシ：9（1.8%）</title></circle><text x="120.0" y="116.0" text-anchor="middle" font-size="26" font-weight="700" fill="#111827">510</text><text x="120.0" y="138.0" text-anchor="middle" font-size="12" fill="#6b7280">筆推薦</text></svg><div class="legend"><div class="lg"><span class="dot" style="background:#2563eb"></span>店內現貨 <b>170</b> <span class="muted">33.3%</span></div><div class="lg"><span class="dot" style="background:#7c3aed"></span>楽天市場 <b>136</b> <span class="muted">26.7%</span></div><div class="lg"><span class="dot" style="background:#059669"></span>Amazon <b>135</b> <span class="muted">26.5%</span></div><div class="lg"><span class="dot" style="background:#d97706"></span>Qoo10 <b>60</b> <span class="muted">11.8%</span></div><div class="lg"><span class="dot" style="background:#dc2626"></span>ヨドバシ <b>9</b> <span class="muted">1.8%</span></div></div></div></div>
+  <h2><span class="n">5</span>推薦來源分布<span class="hint">日本五大通路</span></h2>
+  <div class="card"><div class="donut-wrap"><svg viewBox="0 0 240 240" class="donut"><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#f1f5f9" stroke-width="30"/><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#2563eb" stroke-width="30" stroke-dasharray="163.36 490.09" stroke-dashoffset="-0.00" transform="rotate(-90 120.0 120.0)" stroke-linecap="butt"><title>店內現貨：170（33.3%）</title></circle><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#7c3aed" stroke-width="30" stroke-dasharray="130.69 490.09" stroke-dashoffset="-163.36" transform="rotate(-90 120.0 120.0)" stroke-linecap="butt"><title>楽天市場：136（26.7%）</title></circle><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#059669" stroke-width="30" stroke-dasharray="129.73 490.09" stroke-dashoffset="-294.05" transform="rotate(-90 120.0 120.0)" stroke-linecap="butt"><title>Amazon：135（26.5%）</title></circle><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#d97706" stroke-width="30" stroke-dasharray="57.66 490.09" stroke-dashoffset="-423.78" transform="rotate(-90 120.0 120.0)" stroke-linecap="butt"><title>Qoo10：60（11.8%）</title></circle><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#dc2626" stroke-width="30" stroke-dasharray="8.65 490.09" stroke-dashoffset="-481.44" transform="rotate(-90 120.0 120.0)" stroke-linecap="butt"><title>ヨドバシ：9（1.8%）</title></circle><text x="120.0" y="118.0" text-anchor="middle" font-size="30" font-weight="800" fill="#0f172a">510</text><text x="120.0" y="140.0" text-anchor="middle" font-size="12" fill="#94a3b8">筆推薦</text></svg><div class="legend"><div class="lg"><span class="dot" style="background:#2563eb"></span><span class="lg-name">店內現貨</span><b class="lg-val">170</b><span class="muted">33.3%</span></div><div class="lg"><span class="dot" style="background:#7c3aed"></span><span class="lg-name">楽天市場</span><b class="lg-val">136</b><span class="muted">26.7%</span></div><div class="lg"><span class="dot" style="background:#059669"></span><span class="lg-name">Amazon</span><b class="lg-val">135</b><span class="muted">26.5%</span></div><div class="lg"><span class="dot" style="background:#d97706"></span><span class="lg-name">Qoo10</span><b class="lg-val">60</b><span class="muted">11.8%</span></div><div class="lg"><span class="dot" style="background:#dc2626"></span><span class="lg-name">ヨドバシ</span><b class="lg-val">9</b><span class="muted">1.8%</span></div></div></div></div>
 
-  <h2>推薦類型分布</h2>
-  <div class="card"><div class="donut-wrap"><svg viewBox="0 0 240 240" class="donut"><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#7c3aed" stroke-width="30" stroke-dasharray="163.36 490.09" stroke-dashoffset="-0.00" transform="rotate(-90 120.0 120.0)"><title>premium：170（33.3%）</title></circle><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#059669" stroke-width="30" stroke-dasharray="163.36 490.09" stroke-dashoffset="-163.36" transform="rotate(-90 120.0 120.0)"><title>value：170（33.3%）</title></circle><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#d97706" stroke-width="30" stroke-dasharray="163.36 490.09" stroke-dashoffset="-326.73" transform="rotate(-90 120.0 120.0)"><title>store：170（33.3%）</title></circle><text x="120.0" y="116.0" text-anchor="middle" font-size="26" font-weight="700" fill="#111827">510</text><text x="120.0" y="138.0" text-anchor="middle" font-size="12" fill="#6b7280">筆推薦</text></svg><div class="legend"><div class="lg"><span class="dot" style="background:#7c3aed"></span>premium <b>170</b> <span class="muted">33.3%</span></div><div class="lg"><span class="dot" style="background:#059669"></span>value <b>170</b> <span class="muted">33.3%</span></div><div class="lg"><span class="dot" style="background:#d97706"></span>store <b>170</b> <span class="muted">33.3%</span></div></div></div></div>
+  <h2><span class="n">6</span>推薦類型分布<span class="hint">高階 / 高CP / 店內</span></h2>
+  <div class="card"><div class="donut-wrap"><svg viewBox="0 0 240 240" class="donut"><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#f1f5f9" stroke-width="30"/><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#7c3aed" stroke-width="30" stroke-dasharray="163.36 490.09" stroke-dashoffset="-0.00" transform="rotate(-90 120.0 120.0)" stroke-linecap="butt"><title>premium：170（33.3%）</title></circle><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#059669" stroke-width="30" stroke-dasharray="163.36 490.09" stroke-dashoffset="-163.36" transform="rotate(-90 120.0 120.0)" stroke-linecap="butt"><title>value：170（33.3%）</title></circle><circle cx="120.0" cy="120.0" r="78" fill="none" stroke="#d97706" stroke-width="30" stroke-dasharray="163.36 490.09" stroke-dashoffset="-326.73" transform="rotate(-90 120.0 120.0)" stroke-linecap="butt"><title>store：170（33.3%）</title></circle><text x="120.0" y="118.0" text-anchor="middle" font-size="30" font-weight="800" fill="#0f172a">510</text><text x="120.0" y="140.0" text-anchor="middle" font-size="12" fill="#94a3b8">筆推薦</text></svg><div class="legend"><div class="lg"><span class="dot" style="background:#7c3aed"></span><span class="lg-name">premium</span><b class="lg-val">170</b><span class="muted">33.3%</span></div><div class="lg"><span class="dot" style="background:#059669"></span><span class="lg-name">value</span><b class="lg-val">170</b><span class="muted">33.3%</span></div><div class="lg"><span class="dot" style="background:#d97706"></span><span class="lg-name">store</span><b class="lg-val">170</b><span class="muted">33.3%</span></div></div></div></div>
 
-  <h2>商品重複明細（180 個商品）</h2>
+  <h2><span class="n">7</span>商品重複明細<span class="hint">180 個商品</span></h2>
   <div class="scroll">
     <table>
       <thead><tr><th>#</th><th>人數</th><th>商品名稱</th><th>類型</th>
@@ -113,7 +235,7 @@
     </table>
   </div>
 
-  <h2>會員明細（34 位）</h2>
+  <h2><span class="n">8</span>會員明細<span class="hint">34 位</span></h2>
   <div class="note">點擊任一會員可展開其 15 項推薦商品與問卷需求。</div>
   <div style="margin-top:14px">
         <details class="mem">
@@ -626,6 +748,8 @@
             <ol class="items"><li><span class="tag" style="background:#7c3aed22;color:#7c3aed">最新高階</span><span class="ttl">【2種セット 1000円〜】【アイ＆フェイスパック セレクト】 バクチオール CICARETI シカレチ HARI シートマスク 10枚入り アイシート 60枚入り レチノール セラミド ナイアシンアミド 潤い バリア 保湿 パック 目元 Make.iN PB</span><span class="muted">楽天市場</span><span class="badge b5">7人</span></li><li><span class="tag" style="background:#7c3aed22;color:#7c3aed">最新高階</span><span class="ttl">ブーストシートマスク リグレ ワナリス マスク 1箱4枚入 ヒト幹細胞培養液 12％配合 + ビタミンC誘導体 リッチマスク パック 人幹細胞 目元ケア ハリ肌 保湿ケア 送料無料</span><span class="muted">楽天市場</span><span class="badge b5">6人</span></li><li><span class="tag" style="background:#7c3aed22;color:#7c3aed">最新高階</span><span class="ttl">目元・ほうれい線・全顔集中ケアリフトアップシートマスク! 5枚入低刺激・無香料・無着色・高保湿フェイスパック</span><span class="muted">Amazon</span><span class="badge b4">4人</span></li><li><span class="tag" style="background:#7c3aed22;color:#7c3aed">最新高階</span><span class="ttl">スパトリートメント【2個セット】ストレッチ i シート 60枚入り 部分用シートマスク 目元・口元ケア 保湿 美容液たっぷり 毎日使える スペシャルケア 日本製</span><span class="muted">Qoo10</span><span class="badge b1">1人</span></li><li><span class="tag" style="background:#7c3aed22;color:#7c3aed">最新高階</span><span class="ttl">【公式】ドクターリセラ deep2031 ブライトニングマスク (1枚入り） 医薬部外品 美白 くすみ シミ シワ改善 保湿 ハリ 無添加 敏感肌 エイジングケア シートマスク 女性 メンズ</span><span class="muted">Amazon</span><span class="badge b2">2人</span></li><li><span class="tag" style="background:#05966922;color:#059669">高CP值</span><span class="ttl">【敏感肌向け・保湿力UP】ビタミンC シートマスク 30枚入 ヒト幹細胞 夜 フェイスパック フェイスマスク フェイス マスク シート パック 顔 目元 毎日 プレゼント シートパック 美肌 大容量 メンズ レディース 乾燥肌 高級 保湿 シート マスク VC ギフト 女性 男性用 日本製</span><span class="muted">楽天市場</span><span class="badge b4">4人</span></li><li><span class="tag" style="background:#05966922;color:#059669">高CP值</span><span class="ttl">THE EXOSOME EYE SHEET ザ エクソソーム アイシート 60枚入 大判シート 目元 口元 気になる部分のケアに シンプルケア エイジングサイン アイパック 美容 ピュアエクソソーム NMN ヒト幹細胞 高浸透ビタミンC（APPS）ナノ化コラーゲン 化粧品 美容液 目元パック</span><span class="muted">楽天市場</span><span class="badge b5">11人</span></li><li><span class="tag" style="background:#05966922;color:#059669">高CP值</span><span class="ttl">(ナノア)NANOA 目元パック 皮膚科医が大注目の ヒト幹細胞 EGF 目元ケア アイケア エイジングケア エクソソーム セラミド ヒアルロン酸 パッチ 無添加 日本製 64枚入り (1)</span><span class="muted">Amazon</span><span class="badge b5">8人</span></li><li><span class="tag" style="background:#05966922;color:#059669">高CP值</span><span class="ttl">【バイオダンス】コラーゲンペプチドアイパッチ(60枚入り)|ハイドロゲル目元パッチ|超低分子コラーゲン|10種ペプチド|プロバイオティクスエクソソーム|カフェイン|ほうれい線|シワ・ハリ|無添加|部分パック|韓国コスメ</span><span class="muted">Amazon</span><span class="badge b5">6人</span></li><li><span class="tag" style="background:#05966922;color:#059669">高CP值</span><span class="ttl">公式K-SECRET【公式】レチノールアイパッチ/シワケア,弾力のためのアイパック/レチノール,ナイアシンアミド,ヒアルロン酸/韓国コスメアイマスク/102g=60枚=15フルセット</span><span class="muted">Qoo10</span><span class="badge b2">2人</span></li><li><span class="tag" style="background:#d9770622;color:#d97706">店內現貨</span><span class="ttl">EXOSOME SCIENCE アイシート ラウンドタイプ／60枚</span><span class="muted">店內現貨</span><span class="badge b5">12人</span></li><li><span class="tag" style="background:#d9770622;color:#d97706">店內現貨</span><span class="ttl">THE EXOSOME アイシート／60枚</span><span class="muted">店內現貨</span><span class="badge b5">11人</span></li><li><span class="tag" style="background:#d9770622;color:#d97706">店內現貨</span><span class="ttl">PICOMONTE LUNA PATCH DPM アイパック／60枚</span><span class="muted">店內現貨</span><span class="badge b4">4人</span></li><li><span class="tag" style="background:#d9770622;color:#d97706">店內現貨</span><span class="ttl">EVERYYOU ナイアシンアミド シートアイマスク／120枚</span><span class="muted">店內現貨</span><span class="badge b5">6人</span></li><li><span class="tag" style="background:#d9770622;color:#d97706">店內現貨</span><span class="ttl">EVERYYOU レチノール シートアイマスク／120枚（60對）</span><span class="muted">店內現貨</span><span class="badge b5">10人</span></li></ol>
           </div>
         </details></div>
+
+  <footer>ROKA IZUMI 林博AI日本代購　·　本頁不含會員真實姓名，可公開分享</footer>
 </div>
 </body>
 </html>
